@@ -257,6 +257,10 @@ func (c *client) handlePacket(remoteAddr net.Addr, packet []byte) {
 	if hdr.TruncateConnectionID && !c.config.RequestConnectionIDTruncation {
 		return
 	}
+	// reject packets with the wrong connection ID
+	if !hdr.TruncateConnectionID && hdr.ConnectionID != c.connectionID {
+		return
+	}
 	hdr.Raw = packet[:len(packet)-r.Len()]
 
 	c.mutex.Lock()

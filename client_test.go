@@ -440,6 +440,18 @@ var _ = Describe("Client", func() {
 		Expect(sess.closed).To(BeFalse())
 	})
 
+	It("ignores packets with the wrong connection ID", func() {
+		buf := &bytes.Buffer{}
+		(&wire.PublicHeader{
+			ConnectionID:    cl.connectionID + 1,
+			PacketNumber:    1,
+			PacketNumberLen: 1,
+		}).Write(buf, protocol.VersionWhatever, protocol.PerspectiveServer)
+		cl.handlePacket(addr, buf.Bytes())
+		Expect(sess.packetCount).To(BeZero())
+		Expect(sess.closed).To(BeFalse())
+	})
+
 	It("creates new sessions with the right parameters", func(done Done) {
 		c := make(chan struct{})
 		var cconn connection
